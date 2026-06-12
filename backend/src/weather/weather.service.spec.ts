@@ -92,5 +92,44 @@ describe('WeatherService', () => {
         (global as any).fetch = originalFetch;
       }
     });
+
+    it('builds Open-Meteo URL with split lat and lon (not concatenated)', async () => {
+      // Regression for Bug 3 (task t_0b43dae4): the URL must pass
+      // latitude and longitude as separate query params, not as a single
+      // "lat,lon" string in the latitude param. If the URL is malformed,
+      // Open-Meteo returns 400 and we fall back to a fake 20°C.
+      prisma.weatherCache.findFirst.mockResolvedValue(null);
+      const originalFetch = (global as any).fetch;
+      let capturedUrl = '';
+      (global as any).fetch = jest.fn(async (url: string) => {
+        capturedUrl = url;
+        return {
+          ok: true,
+          json: async () => ({
+            current: {
+              temperature_2m: 26.8,
+              apparent_temperature: 28.0,
+              relative_humidity_2m: 65,
+              weather_code: 2,
+              wind_speed_10m: 3.1,
+            },
+          }),
+        };
+      });
+      prisma.weatherCache.create.mockResolvedValue({});
+      try {
+        const result = await svc.getWeather(39.9, 116.4);
+        // Assert URL shape — both lat and lon must be separate params
+        expect(capturedUrl).toContain('latitude=39.9');
+        expect(capturedUrl).toContain('longitude=116.4');
+        expect(capturedUrl).not.toContain('latitude=39.9,116.4');
+        expect(capturedUrl).not.toContain('latitude=39.9%2C116.4');
+        // And the response is real (not the 20°C fallback)
+        expect(result.temp).toBe(26.8);
+        expect(result.source).toBe('live');
+      } finally {
+        (global as any).fetch = originalFetch;
+      }
+    });
   });
 });
