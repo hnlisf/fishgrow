@@ -18,11 +18,22 @@ export interface UpdateReminderDto {
 export class RemindersService {
   constructor(private prisma: PrismaService) {}
 
-  async list(userId: string, includeDone = false) {
-    return this.prisma.reminder.findMany({
+  async list(userId: string, includeDone = false, lang = 'zh') {
+    const items = await this.prisma.reminder.findMany({
       where: { userId, ...(includeDone ? {} : { isDone: false }) },
       orderBy: { dueAt: 'asc' },
     });
+    return items.map((r) => this.toI18n(r, lang));
+  }
+
+  toI18n(r: Reminder, lang: string) {
+    let titleI18n: Record<string, string> = {};
+    try { titleI18n = JSON.parse(r.titleI18n); } catch {}
+    return {
+      ...r,
+      title: titleI18n[lang] || titleI18n['zh'] || r.titleI18n,
+      titleI18n,
+    };
   }
 
   async create(data: CreateReminderDto) {

@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FishTank } from '@prisma/client';
+import { FishSpeciesService } from '../fish-species/fish-species.service';
 
 export interface CreateFishTankDto {
-  userId: string;
+  userId?: string;
   name?: string;
   size?: 'small' | 'medium' | 'large';
   temp?: number;
@@ -21,26 +22,44 @@ export interface UpdateFishTankDto {
 
 @Injectable()
 export class FishTanksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private speciesService: FishSpeciesService,
+  ) {}
 
-  async findAllByUser(userId: string): Promise<FishTank[]> {
-    return this.prisma.fishTank.findMany({
+  async findAllByUser(userId: string, lang = 'zh'): Promise<any[]> {
+    const tanks = await this.prisma.fishTank.findMany({
       where: { userId },
       include: { fish: { include: { species: true } } },
       orderBy: { createdAt: 'asc' },
     });
+    return tanks.map((t) => this.attachI18n(t, lang));
   }
 
-  async findOne(id: string): Promise<FishTank | null> {
-    return this.prisma.fishTank.findUnique({
+  async findOne(id: string, lang = 'zh'): Promise<any> {
+    const tank = await this.prisma.fishTank.findUnique({
       where: { id },
       include: { fish: { include: { species: true } } },
     });
+    if (!tank) return null;
+    return this.attachI18n(tank, lang);
+  }
+
+  private attachI18n(tank: any, lang: string) {
+    if (tank.fish) {
+      tank.fish = tank.fish.map((f: any) => {
+        if (f.species) f.species = this.speciesService.toI18n(f.species, lang);
+        return f;
+      });
+    }
+    return tank;
   }
 
   async create(data: CreateFishTankDto): Promise<FishTank> {
-    // MVP: auto-create user if it doesn't exist (no auth in MVP)
-    const userId = await this.ensureUser(data.userId);
+    // MVP: auto-create user if no userId provided (no auth in MVP)
+    const userId = data.userId
+      ? await this.ensureUser(data.userId)
+      : await this.createDemoUser();
     return this.prisma.fishTank.create({
       data: {
         userId,
@@ -55,7 +74,16 @@ export class FishTanksService {
   private async ensureUser(userId: string): Promise<string> {
     const existing = await this.prisma.user.findUnique({ where: { id: userId } });
     if (existing) return existing.id;
-    return this.prisma.user.create({ data: { id: userId } }).then((u) => u.id);
+    return (await this.prisma.user.create({ data: { id: userId } })).id;
+  }
+
+  private async createDemoUser(): Promise<string> {
+    // MVP single-user mode: always reuse the most-recent user if any,
+    // otherwise create a fresh one. This makes the app feel like a personal
+    // local app without requiring login.
+    const latest = await this.prisma.user.findFirst({ orderBy: { createdAt: 'desc' } });
+    if (latest) return latest.id;
+    return (await this.prisma.user.create({ data: {} })).id;
   }
 
   async update(id: string, data: UpdateFishTankDto): Promise<FishTank> {

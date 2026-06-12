@@ -53,7 +53,7 @@ export class FishSpeciesService {
     });
   }
 
-  private toI18n(s: FishSpecies, lang: string) {
+  toI18n(s: FishSpecies, lang: string) {
     let nameI18n: Record<string, string> = {};
     let descI18n: Record<string, string> = {};
     let stages: any[] = [];

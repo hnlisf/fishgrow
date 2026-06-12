@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Fish } from '@prisma/client';
+import { FishSpeciesService } from '../fish-species/fish-species.service';
 
 export interface CreateFishDto {
   tankId: string;
@@ -17,20 +18,34 @@ const FEED_NUTRITION: Record<FeedAmount, number> = { small: 15, normal: 30, larg
 
 @Injectable()
 export class FishService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private speciesService: FishSpeciesService,
+  ) {}
 
-  async findAllByTank(tankId: string) {
-    return this.prisma.fish.findMany({
+  async findAllByTank(tankId: string, lang = 'zh') {
+    const list = await this.prisma.fish.findMany({
       where: { tankId },
       include: { species: true, feedRecords: { orderBy: { fedAt: 'desc' }, take: 5 } },
+      orderBy: { createdAt: 'asc' },
     });
+    return list.map((f) => this.attachI18nSpecies(f, lang));
   }
 
-  async findOne(id: string) {
-    return this.prisma.fish.findUnique({
+  async findOne(id: string, lang = 'zh') {
+    const fish = await this.prisma.fish.findUnique({
       where: { id },
       include: { species: true, feedRecords: { orderBy: { fedAt: 'desc' }, take: 10 } },
     });
+    if (!fish) return null;
+    return this.attachI18nSpecies(fish, lang);
+  }
+
+  private attachI18nSpecies(fish: any, lang: string) {
+    if (fish.species) {
+      fish.species = this.speciesService.toI18n(fish.species, lang);
+    }
+    return fish;
   }
 
   async create(data: CreateFishDto): Promise<Fish> {

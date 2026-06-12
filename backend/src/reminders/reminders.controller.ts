@@ -12,12 +12,14 @@ export class RemindersController {
   @ApiOperation({ summary: 'List user reminders (default: pending only)' })
   @ApiQuery({ name: 'userId', required: true })
   @ApiQuery({ name: 'includeDone', required: false, type: Boolean })
+  @ApiQuery({ name: 'lang', required: false })
   async list(
     @Query('userId') userId: string,
     @Query('includeDone') includeDone?: string,
+    @Query('lang') lang?: string,
   ) {
     if (!userId) throw new BadRequestException('userId required');
-    return this.service.list(userId, includeDone === 'true');
+    return this.service.list(userId, includeDone === 'true', lang);
   }
 
   @Post()

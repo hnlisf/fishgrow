@@ -11,14 +11,16 @@ export class FishTanksController {
   @Get()
   @ApiOperation({ summary: 'List all fish tanks for a user' })
   @ApiQuery({ name: 'userId', required: true })
-  async list(@Query('userId') userId: string) {
-    return this.service.findAllByUser(userId);
+  @ApiQuery({ name: 'lang', required: false })
+  async list(@Query('userId') userId: string, @Query('lang') lang?: string) {
+    return this.service.findAllByUser(userId, lang);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get fish tank detail' })
-  async detail(@Param('id') id: string) {
-    return this.service.findOne(id);
+  @ApiQuery({ name: 'lang', required: false })
+  async detail(@Param('id') id: string, @Query('lang') lang?: string) {
+    return this.service.findOne(id, lang);
   }
 
   @Post()

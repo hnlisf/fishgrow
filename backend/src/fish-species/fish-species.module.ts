@@ -5,5 +5,6 @@ import { FishSpeciesController } from './fish-species.controller';
 @Module({
   controllers: [FishSpeciesController],
   providers: [FishSpeciesService],
+  exports: [FishSpeciesService],
 })
 export class FishSpeciesModule {}
