@@ -8,14 +8,29 @@ import { PrismaClient } from '@prisma/client';
  * user, 1 demo tank, 1 goldfish). This is the regression test for
  * "task t_0b43dae4 Bug 1: seed.ts duplicates species".
  *
- * We use a separate on-disk DB file under dist/ so the spec doesn't
- * trample the dev DB.
+ * We point Prisma at a separate on-disk DB (under dist/ via a custom
+ * DATABASE_URL) so the spec never touches the dev DB and the running
+ * backend on :3000 can keep serving.
  */
+const TEST_DB_PATH = '/tmp/fishgrow-seed-test.db';
+process.env.DATABASE_URL = `file:${TEST_DB_PATH}`;
+
+// Force the test client to re-resolve after we mutated DATABASE_URL
+// (Prisma reads the env var at construction time).
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { execSync } = require('child_process');
+execSync(`rm -f ${TEST_DB_PATH}`, { stdio: 'ignore' });
+
 describe('seed.ts idempotency', () => {
   let prisma: PrismaClient;
 
   beforeAll(async () => {
     prisma = new PrismaClient();
+    // Apply the existing migrations to the test DB
+    execSync(`npx prisma migrate deploy --schema prisma/schema.prisma`, {
+      stdio: 'ignore',
+      env: { ...process.env, DATABASE_URL: `file:${TEST_DB_PATH}` },
+    });
   });
 
   afterAll(async () => {

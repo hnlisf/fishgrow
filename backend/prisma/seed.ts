@@ -229,11 +229,24 @@ export async function main(prismaArg?: PrismaClient) {
   console.log('Seed completed. Default user + tank + goldfish created.');
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await defaultPrisma.$disconnect();
-  });
+// Only auto-run when this file is the entry point (node dist/prisma/seed.js),
+// not when it's imported by a test or other module. This prevents the IIFE
+// from re-seeding the dev database every time seed.ts is imported.
+const isMainModule = (() => {
+  try {
+    return require.main === module;
+  } catch {
+    return false;
+  }
+})();
+
+if (isMainModule) {
+  main()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await defaultPrisma.$disconnect();
+    });
+}
