@@ -12,3 +12,8 @@ dist/
 backend/prisma/dev.db
 backend/prisma/dev.db-journal
 backend/prisma/migrations/dev.db
+
+# Test artifacts
+backend/coverage/
+frontend/coverage/
+*.tsbuildinfo

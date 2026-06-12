@@ -58,9 +58,11 @@ export interface Reminder {
   id: string;
   userId: string;
   type: 'feed' | 'water_change' | 'clean';
-  titleI18n: string;
+  titleI18n: string | Record<string, string>;
   dueAt: string;
   isDone: boolean;
+  // backend may also return the resolved title:
+  title?: string;
 }
 
 export interface WeatherData {
@@ -71,6 +73,18 @@ export interface WeatherData {
   description: string;
   windSpeed: number;
   source: string;
+}
+
+export interface LocationInfo {
+  ip: string;
+  country: string;
+  countryCode: string;
+  region: string;
+  city: string;
+  lat: number;
+  lon: number;
+  timezone: string;
+  source: 'ipapi' | 'fallback';
 }
 
 export interface FeedingAdvice {

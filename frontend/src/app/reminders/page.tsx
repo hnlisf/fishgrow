@@ -5,12 +5,15 @@ import { useTranslations } from 'next-intl';
 import { useApi, api, Reminder } from '@/lib/api';
 
 function getTitle(rem: Reminder, locale: string): string {
-  try {
-    const parsed = JSON.parse(rem.titleI18n);
-    return parsed[locale] || parsed.zh || rem.titleI18n;
-  } catch {
-    return rem.titleI18n;
+  // backend may send titleI18n as parsed object OR a JSON string depending on version
+  const raw: any = rem.titleI18n;
+  let parsed: Record<string, string> | null = null;
+  if (raw && typeof raw === 'object') parsed = raw as any;
+  else if (typeof raw === 'string') {
+    try { parsed = JSON.parse(raw); } catch {}
   }
+  if (parsed) return parsed[locale] || parsed.zh || JSON.stringify(parsed);
+  return typeof raw === 'string' ? raw : 'Reminder';
 }
 
 export default function RemindersPage() {

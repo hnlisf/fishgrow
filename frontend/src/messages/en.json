@@ -20,8 +20,9 @@
     }
   },
   "tank": {
-    "title": "My Tank",
-    "empty": "No tank yet. Create your first fish tank below.",
+    "title": "My Fish Tank",
+    "loading": "Loading tank…",
+    "empty": "No tank yet. Tap below to create your first aquarium.",
     "createButton": "New tank",
     "name": "Tank name",
     "size": "Size",
@@ -70,18 +71,21 @@
     "days": "days"
   },
   "weather": {
-    "title": "Today's weather",
+    "title": "Today's Weather",
     "adviceTitle": "Feeding advice",
     "ideal": "Ideal",
-    "ok": "OK",
-    "poor": "Poor",
+    "ok": "Okay",
+    "poor": "Not recommended",
     "loading": "Loading…",
     "temp": "Temp",
     "feels": "Feels like",
     "humidity": "Humidity",
     "wind": "Wind",
     "enableNotif": "Enable browser notifications",
-    "locationTitle": "Your location"
+    "locationTitle": "Your location",
+    "fallback": "Default city",
+    "live": "Live",
+    "noFishHint": "Add a fish to your tank first to get personalized advice"
   },
   "reminders": {
     "title": "Reminders",

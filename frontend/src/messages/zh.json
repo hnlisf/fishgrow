@@ -21,6 +21,7 @@
   },
   "tank": {
     "title": "我的鱼缸",
+    "loading": "加载鱼缸中…",
     "empty": "还没有鱼缸，点击下方按钮创建你的第一个鱼缸",
     "createButton": "新建鱼缸",
     "name": "鱼缸名称",
@@ -81,7 +82,10 @@
     "humidity": "湿度",
     "wind": "风速",
     "enableNotif": "开启浏览器通知",
-    "locationTitle": "当前位置"
+    "locationTitle": "当前位置",
+    "fallback": "默认城市",
+    "live": "实时",
+    "noFishHint": "先去鱼缸添加鱼，再来获取个性化投喂建议"
   },
   "reminders": {
     "title": "提醒中心",

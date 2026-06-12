@@ -21,6 +21,7 @@
   },
   "tank": {
     "title": "私の水槽",
+    "loading": "水槽を読み込み中…",
     "empty": "まだ水槽がありません。下のボタンで作成してください。",
     "createButton": "新しい水槽",
     "name": "水槽名",
@@ -74,14 +75,17 @@
     "adviceTitle": "餌やり提案",
     "ideal": "最適",
     "ok": "まあまあ",
-    "poor": "不適",
+    "poor": "不宜",
     "loading": "読み込み中…",
     "temp": "気温",
     "feels": "体感",
     "humidity": "湿度",
     "wind": "風速",
     "enableNotif": "ブラウザ通知を有効化",
-    "locationTitle": "現在地"
+    "locationTitle": "現在地",
+    "fallback": "デフォルト都市",
+    "live": "リアルタイム",
+    "noFishHint": "先に魚缸に魚を追加してから、個別の提案を確認してください"
   },
   "reminders": {
     "title": "通知センター",

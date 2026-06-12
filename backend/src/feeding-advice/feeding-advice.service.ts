@@ -10,6 +10,64 @@ export interface FeedingAdvice {
   actionItems: string[];
 }
 
+// Localized strings per lang. Action items are short directives.
+const T = {
+  zh: {
+    farOutside: (cur: number, min: number, max: number) =>
+      `当前气温 ${cur}°C 远超适宜范围 ${min}-${max}°C，请开启加热或降温设备。`,
+    idealMid: (cur: number) => `当前 ${cur}°C 处于最佳区间，按正常频率投喂即可。`,
+    idealOk: (cur: number) => `当前 ${cur}°C 在适宜范围内，按正常频率投喂。`,
+    slightlyCold: (cur: number) => `当前 ${cur}°C 略低于适宜温度，建议减少投喂。`,
+    slightlyHot: (cur: number) => `当前 ${cur}°C 略高于适宜温度，建议增加氧气。`,
+    actions: {
+      checkHeater: '检查加热棒',
+      reduceFeeding: '减少投喂量（代谢降低）',
+      feedNormal: '按鱼种频率正常投喂',
+      keepWaterClean: '保持水质清洁',
+      halfFeeding: '投喂量减半',
+      watchHeater: '关注加热棒状态',
+      turnOnAerator: '开启增氧泵',
+      reduceAmount: '减少投喂量',
+    },
+  },
+  en: {
+    farOutside: (cur: number, min: number, max: number) =>
+      `Current temperature ${cur}C is far outside the suitable range ${min}-${max}C. Please enable heating/cooling.`,
+    idealMid: (cur: number) => `Current ${cur}C is in the optimal zone, normal feeding recommended.`,
+    idealOk: (cur: number) => `Current ${cur}C is within the suitable range, normal feeding is fine.`,
+    slightlyCold: (cur: number) => `Current ${cur}C is slightly below the suitable temperature; consider reducing feeding.`,
+    slightlyHot: (cur: number) => `Current ${cur}C is slightly above the suitable temperature; add oxygen.`,
+    actions: {
+      checkHeater: 'Check tank heater',
+      reduceFeeding: 'Reduce feeding (lower metabolism)',
+      feedNormal: 'Feed at species frequency',
+      keepWaterClean: 'Keep water clean',
+      halfFeeding: 'Halve feeding amount',
+      watchHeater: 'Watch the heater',
+      turnOnAerator: 'Turn on aerator',
+      reduceAmount: 'Reduce feeding amount',
+    },
+  },
+  ja: {
+    farOutside: (cur: number, min: number, max: number) =>
+      `現在の気温 ${cur}°C は適性範囲 ${min}-${max}°C を大きく外れています。ヒーター・冷却を確認してください。`,
+    idealMid: (cur: number) => `現在 ${cur}°C は最適範囲内です。通常通り餌を与えてください。`,
+    idealOk: (cur: number) => `現在 ${cur}°C は適性範囲内です。通常通り餌を与えてください。`,
+    slightlyCold: (cur: number) => `現在 ${cur}°C は適性温度をわずかに下回っています。餌やりを減らしてください。`,
+    slightlyHot: (cur: number) => `現在 ${cur}°C は適性温度をわずかに上回っています。酸素を補給してください。`,
+    actions: {
+      checkHeater: 'ヒーターを確認',
+      reduceFeeding: '餌やりを減らす（代謝低下）',
+      feedNormal: '魚種の頻度に従って餌やり',
+      keepWaterClean: '水質を清潔に保つ',
+      halfFeeding: '餌の量を半分に',
+      watchHeater: 'ヒーターの状態を確認',
+      turnOnAerator: 'エアレーションON',
+      reduceAmount: '餌の量を減らす',
+    },
+  },
+} as const;
+
 @Injectable()
 export class FeedingAdviceService {
   constructor(
@@ -33,6 +91,7 @@ export class FeedingAdviceService {
   }
 
   private advise(species: any, currentTemp: number, lang: string): FeedingAdvice {
+    const L = (T as any)[lang] ?? T.zh;
     let name = species.nameI18n;
     try { name = JSON.parse(species.nameI18n)[lang] ?? JSON.parse(species.nameI18n).zh; } catch {}
     const { tempMin, tempMax } = species;
@@ -45,27 +104,23 @@ export class FeedingAdviceService {
 
     if (currentTemp < tempMin - 3 || currentTemp > tempMax + 3) {
       suitability = 'poor';
-      rec = `Current temperature ${currentTemp}C is far outside the suitable range ${tempMin}-${tempMax}C. Please enable heating/cooling.`;
-      actions.push('Check tank heater');
-      actions.push('Reduce feeding (lower metabolism)');
+      rec = L.farOutside(currentTemp, tempMin, tempMax);
+      actions.push(L.actions.checkHeater, L.actions.reduceFeeding);
     } else if (currentTemp >= tempMin && currentTemp <= tempMax) {
       suitability = 'ideal';
       if (Math.abs(currentTemp - mid) <= tolerance * 0.3) {
-        rec = `Current ${currentTemp}C is in the optimal zone, normal feeding recommended.`;
+        rec = L.idealMid(currentTemp);
       } else {
-        rec = `Current ${currentTemp}C is within the suitable range, normal feeding is fine.`;
+        rec = L.idealOk(currentTemp);
       }
-      actions.push('Feed at species frequency');
-      actions.push('Keep water clean');
+      actions.push(L.actions.feedNormal, L.actions.keepWaterClean);
     } else {
       if (currentTemp < tempMin) {
-        rec = `Current ${currentTemp}C is slightly below the suitable temperature; consider reducing feeding.`;
-        actions.push('Halve feeding amount');
-        actions.push('Watch the heater');
+        rec = L.slightlyCold(currentTemp);
+        actions.push(L.actions.halfFeeding, L.actions.watchHeater);
       } else {
-        rec = `Current ${currentTemp}C is slightly above the suitable temperature; add oxygen.`;
-        actions.push('Turn on aerator');
-        actions.push('Reduce feeding amount');
+        rec = L.slightlyHot(currentTemp);
+        actions.push(L.actions.turnOnAerator, L.actions.reduceAmount);
       }
     }
 
