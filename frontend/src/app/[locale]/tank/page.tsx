@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 import { api, useApi, FishTank, Fish } from '@/lib/api';
 
 const TANK_ID_KEY = 'fishgrow.tankId';
@@ -217,7 +218,7 @@ export default function TankPage() {
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-water-600">{t('fish')} ({fishList?.length ?? 0})</h2>
-          <a href="/species" className="btn-primary text-sm">{t('addFish')}</a>
+          <Link href="/species" className="btn-primary text-sm">{t('addFish')}</Link>
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           {(fishList ?? []).map((f) => (
