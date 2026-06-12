@@ -1,8 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+const defaultPrisma = new PrismaClient();
 
-async function main() {
+export async function main(prismaArg?: PrismaClient) {
+  const prisma = prismaArg ?? defaultPrisma;
   const species = [
     {
       nameI18n: JSON.stringify({ zh: '金鱼', en: 'Goldfish', ja: '金魚' }),
@@ -234,5 +235,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    await defaultPrisma.$disconnect();
   });
