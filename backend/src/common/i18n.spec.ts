@@ -41,7 +41,7 @@ describe('safeParse', () => {
 
   it('should pass through non-string values (already-typed object/array)', () => {
     const arr = [1, 2, 3];
-    expect(safeParse<number[]>(arr, [])).toBe(arr);  // same reference
+    expect(safeParse<number[]>(arr as any, [])).toBe(arr);  // same reference
   });
 });
 
