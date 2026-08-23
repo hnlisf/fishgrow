@@ -51,7 +51,7 @@ async function main(): Promise<void> {
 
     for (const row of rows) {
       // P2 PR 11: 用 safeParse 替换裸 JSON.parse（项目策略禁止）
-      const value = safeParse<Record<string, unknown>>(row.visualVariant!, null);
+      const value = safeParse<Record<string, unknown>>(row.visualVariant!, null as any);
       if (!value) {
         console.warn(`skip-invalid-json\t${row.id}`);
         skippedInvalid++;
@@ -63,7 +63,7 @@ async function main(): Promise<void> {
         const oldValue = value[dim];
         if (typeof oldValue !== 'string') continue;
         // P3 §2.2 PR 15：改用共享映射函数（与 service 保持一致）
-        const newValue = canonicalize(dim as Dimension, oldValue);
+        const newValue = canonicalize(dim as any, oldValue);
         if (newValue === oldValue) continue;  // 没变 = 已规范
         value[dim] = newValue;
         counts.set(`${dim}\t${oldValue}\t${newValue}`, (counts.get(`${dim}\t${oldValue}\t${newValue}`) || 0) + 1);
